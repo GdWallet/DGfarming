@@ -38,10 +38,13 @@
     .transaction-item, .task-item, .referral-item { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
     .withdraw-form { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; }
     .referral-code { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; font-family: monospace; font-size: 18px; text-align: center; margin: 10px 0; }
+    .error-message { background: #ff4444; color: white; padding: 12px; border-radius: 12px; margin-bottom: 16px; display: none; }
   </style>
 </head>
 <body>
 <div class="container">
+  <div id="errorBox" class="error-message"></div>
+
   <!-- Auth Forms -->
   <div id="authContainer">
     <div id="loginForm" class="auth-form">
@@ -111,27 +114,41 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbxmjRu1PrpbBRX_PLodO2phEcY4LkFdm82T77yKSURzqokxCSy8c2rWwD35IGXmefY/exec";
   let userId = null;
 
+  function showError(msg) {
+    const box = document.getElementById("errorBox");
+    box.innerText = msg;
+    box.style.display = "block";
+    setTimeout(() => box.style.display = "none", 5000);
+  }
+
   async function apiCall(path, data = {}) {
-    const url = `${API_URL}?path=${path}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    return await response.json();
+    try {
+      const url = `${API_URL}?path=${path}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (err) {
+      showError("Network error: " + err.message);
+      throw err;
+    }
   }
 
   // Auth
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
+    if (!email || !password) return showError("Please enter email and password");
     const res = await apiCall("login", { email, password });
     if (res.success) {
       userId = res.userId;
       showDashboard();
       loadDashboard();
     } else {
-      alert("Login failed: " + res.error);
+      showError("Login failed: " + (res.error || "Unknown error"));
     }
   });
 
@@ -140,13 +157,14 @@
     const email = document.getElementById("signupEmail").value;
     const password = document.getElementById("signupPassword").value;
     const referral = document.getElementById("signupReferral").value;
+    if (!name || !email || !password) return showError("Please fill all fields");
     const res = await apiCall("signup", { name, email, password, referral });
     if (res.success) {
       alert("Signup successful! Please login.");
       document.getElementById("loginForm").style.display = "block";
       document.getElementById("signupForm").style.display = "none";
     } else {
-      alert("Signup failed: " + res.error);
+      showError("Signup failed: " + (res.error || "Unknown error"));
     }
   });
 
@@ -168,13 +186,13 @@
     const res = await apiCall("dashboard", { userId });
     if (res.balance !== undefined) {
       document.getElementById("balanceAmount").innerText = res.balance.toFixed(4);
+    } else if (res.error) {
+      showError("Dashboard error: " + res.error);
     }
-    // Load transactions (optional – you can add a getTransactions endpoint later)
     loadReferralInfo();
   }
 
   async function loadReferralInfo() {
-    // Try to get referral code from backend (if endpoint exists)
     try {
       const res = await apiCall("getReferralInfo", { userId });
       if (res.referral_code) {
@@ -187,13 +205,13 @@
           listDiv.innerHTML = "<div>No referrals yet.</div>";
         }
       } else {
-        // Fallback: generate a dummy code based on userId
+        // Fallback
         document.getElementById("referralCodeDisplay").innerText = userId ? userId.slice(0,6).toUpperCase() : "N/A";
         document.getElementById("referralsList").innerHTML = "<div>Referral tracking requires backend update.</div>";
       }
     } catch (e) {
-      document.getElementById("referralCodeDisplay").innerText = "Not available (add endpoint)";
-      document.getElementById("referralsList").innerHTML = "<div>To enable referral tracking, add the getReferralInfo endpoint to your script.</div>";
+      document.getElementById("referralCodeDisplay").innerText = "Not available";
+      document.getElementById("referralsList").innerHTML = "<div>Referral endpoint not ready.</div>";
     }
   }
 
@@ -206,7 +224,7 @@
       alert(`You mined ${res.earned.toFixed(4)} DGW!`);
       loadDashboard();
     } else {
-      alert("Mining failed: " + res.error);
+      showError("Mining failed: " + (res.error || "Unknown error"));
     }
     btn.disabled = false;
     btn.innerText = "⛏️ MINE NOW";
@@ -216,7 +234,7 @@
     const amount = parseFloat(document.getElementById("withdrawAmount").value);
     const wallet = document.getElementById("withdrawWallet").value;
     if (!amount || !wallet) {
-      alert("Please enter amount and wallet address");
+      showError("Please enter amount and wallet address");
       return;
     }
     const res = await apiCall("withdraw", { userId, amount, wallet });
@@ -224,17 +242,17 @@
       alert("Withdrawal request submitted.");
       loadDashboard();
     } else {
-      alert("Error: " + res.error);
+      showError("Withdrawal error: " + (res.error || "Unknown error"));
     }
   });
 
   document.getElementById("copyReferralBtn").addEventListener("click", () => {
     const code = document.getElementById("referralCodeDisplay").innerText;
-    if (code && code !== "Loading..." && code !== "Not available (add endpoint)") {
+    if (code && code !== "Loading..." && code !== "Not available") {
       navigator.clipboard.writeText(code);
       alert("Referral code copied!");
     } else {
-      alert("No referral code available yet.");
+      showError("No referral code available yet.");
     }
   });
 
@@ -251,4 +269,4 @@
   });
 </script>
 </body>
-  </html>
+</html>
