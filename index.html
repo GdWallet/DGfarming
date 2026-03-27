@@ -38,17 +38,19 @@
       margin: 5px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      font-size: 14px;
     }
 
     button {
-      padding: 12px 20px;
+      padding: 12px;
       background: #f7931a;
       border: none;
       color: white;
       border-radius: 10px;
       cursor: pointer;
-      width: 90%;
+      width: 95%;
       font-size: 16px;
+      margin-top: 5px;
     }
 
     button:hover {
@@ -61,9 +63,7 @@
 
     .logout {
       background: red;
-      margin-top: 10px;
     }
-
   </style>
 </head>
 
@@ -76,17 +76,17 @@
   <!-- SIGNUP -->
   <div class="card">
     <h3>Create Account</h3>
-    <input id="name" placeholder="Name"><br>
-    <input id="email" placeholder="Email"><br>
-    <input id="pass" type="password" placeholder="Password"><br>
+    <input id="name" placeholder="Name">
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
     <button onclick="signup()">Signup</button>
   </div>
 
   <!-- LOGIN -->
   <div class="card">
     <h3>Login</h3>
-    <input id="lemail" placeholder="Email"><br>
-    <input id="lpass" type="password" placeholder="Password"><br>
+    <input id="lemail" placeholder="Email">
+    <input id="lpass" type="password" placeholder="Password">
     <button onclick="login()">Login</button>
   </div>
 
@@ -107,81 +107,118 @@ const API = "https://script.google.com/macros/s/AKfycbx4UDcBBNZ1o-6WvOTWEoonSaF3
 
 let user_id = localStorage.getItem("user_id") || "";
 
-// 🔹 AUTO LOGIN
+// ✅ AUTO LOGIN
 if (user_id) {
   document.getElementById("dashboard").style.display = "block";
 }
 
-// 🔹 SIGNUP
+// ✅ SIGNUP (FIXED)
 async function signup() {
-  if (!name.value || !email.value || !pass.value) {
-    alert("Fill all fields");
+  const nameVal = document.getElementById("name").value.trim();
+  const emailVal = document.getElementById("email").value.trim();
+  const passVal = document.getElementById("pass").value.trim();
+
+  if (!nameVal || !emailVal || !passVal) {
+    alert("Please fill all fields");
     return;
   }
 
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "signup",
-      name: name.value,
-      email: email.value,
-      password: pass.value
-    })
-  });
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "signup",
+        name: nameVal,
+        email: emailVal,
+        password: passVal
+      })
+    });
 
-  const data = await res.json();
-  alert(data.message || "Signup Success");
+    const data = await res.json();
+
+    if (data.status === "success") {
+      alert("Signup successful! Now login.");
+    } else {
+      alert(data.message || "Signup failed");
+    }
+
+  } catch (err) {
+    alert("Network error");
+  }
 }
 
-// 🔹 LOGIN
+// ✅ LOGIN (FIXED)
 async function login() {
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "login",
-      email: lemail.value,
-      password: lpass.value
-    })
-  });
+  const emailVal = document.getElementById("lemail").value.trim();
+  const passVal = document.getElementById("lpass").value.trim();
 
-  const data = await res.json();
+  if (!emailVal || !passVal) {
+    alert("Please fill all fields");
+    return;
+  }
 
-  if (data.status === "success") {
-    user_id = data.user_id;
-    localStorage.setItem("user_id", user_id);
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "login",
+        email: emailVal,
+        password: passVal
+      })
+    });
 
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("balance").innerText = data.balance;
-  } else {
-    alert("Login failed");
+    const data = await res.json();
+
+    if (data.status === "success") {
+      user_id = data.user_id;
+      localStorage.setItem("user_id", user_id);
+
+      document.getElementById("dashboard").style.display = "block";
+      document.getElementById("balance").innerText = parseFloat(data.balance).toFixed(4);
+    } else {
+      alert("Invalid email or password");
+    }
+
+  } catch (err) {
+    alert("Network error");
   }
 }
 
-// 🔹 MINING
+// ✅ MINING
 async function mine() {
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "mine",
-      user_id: user_id
-    })
-  });
+  if (!user_id) {
+    alert("Please login first");
+    return;
+  }
 
-  const data = await res.json();
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "mine",
+        user_id: user_id
+      })
+    });
 
-  if (data.status === "success") {
-    document.getElementById("balance").innerText = parseFloat(data.balance).toFixed(4);
-  } else {
-    alert("Mining failed");
+    const data = await res.json();
+
+    if (data.status === "success") {
+      document.getElementById("balance").innerText =
+        parseFloat(data.balance).toFixed(4);
+    } else {
+      alert("Mining failed");
+    }
+
+  } catch (err) {
+    alert("Network error");
   }
 }
 
-// 🔹 LOGOUT
+// ✅ LOGOUT
 function logout() {
   localStorage.removeItem("user_id");
   location.reload();
 }
-
 </script>
 
 </body>
