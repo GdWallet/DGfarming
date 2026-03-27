@@ -1,155 +1,478 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>DG Wallet</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>DG Wallet - Advanced Mining & P2P</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #f7931a, #ffb347);
+    * {
       margin: 0;
       padding: 0;
-      color: white;
-      text-align: center;
+      box-sizing: border-box;
     }
-
-    h1 {
-      margin-top: 20px;
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f7931a, #ffb347);
+      color: #fff;
+      min-height: 100vh;
     }
-
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
     .card {
-      background: white;
-      color: black;
-      margin: 15px;
-      padding: 20px;
-      border-radius: 15px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
-
-    input {
-      width: 90%;
-      padding: 10px;
-      margin: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+    h1, h2, h3 {
+      margin-bottom: 1rem;
     }
-
-    button {
+    input, button {
+      width: 100%;
       padding: 12px;
-      background: #f7931a;
+      margin: 6px 0;
+      border-radius: 40px;
       border: none;
-      color: white;
-      border-radius: 10px;
-      width: 95%;
+      font-size: 16px;
     }
-
-    #dashboard {
+    input {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding-left: 20px;
+    }
+    input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+    button {
+      background: #f7931a;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .balance {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #ffd966;
+    }
+    .mining-active {
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+    .timer {
+      font-size: 1.2rem;
+      font-family: monospace;
+      margin-top: 8px;
+    }
+    .verified {
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .admin-panel {
+      background: #2c3e50;
+      border-radius: 20px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .user-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .user-item {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .announcement {
+      background: rgba(0,0,0,0.3);
+      border-left: 4px solid #f7931a;
+      padding: 8px 12px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    .hide {
       display: none;
     }
   </style>
 </head>
-
 <body>
+<div class="container">
+  <h1>🚀 DG Wallet</h1>
 
-<h1>🚀 DG Wallet</h1>
+  <!-- Auth Section -->
+  <div id="authSection">
+    <div class="card">
+      <h3>Create Account</h3>
+      <input id="signupName" placeholder="Name">
+      <input id="signupEmail" placeholder="Email">
+      <input id="signupPass" type="password" placeholder="Password">
+      <input id="referrerId" placeholder="Referrer ID (optional)">
+      <button onclick="signup()">Signup</button>
+    </div>
+    <div class="card">
+      <h3>Login</h3>
+      <input id="loginEmail" placeholder="Email">
+      <input id="loginPass" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+    </div>
+  </div>
 
-<div class="card">
-  <h3>Create Account</h3>
-  <input id="name" placeholder="Name">
-  <input id="email" placeholder="Email">
-  <input id="pass" type="password" placeholder="Password">
-  <button onclick="signup()">Signup</button>
-</div>
+  <!-- Dashboard Section -->
+  <div id="dashboard" class="hide">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>💰 Balance</h3>
+        <span id="verifiedBadge" class="verified">✓ Verified</span>
+      </div>
+      <div class="balance" id="balance">0.0000</div>
+      <div id="miningArea">
+        <button id="startMiningBtn" onclick="startMining()">⛏️ Start Mining (24h)</button>
+        <div id="miningStatus" class="timer"></div>
+      </div>
+      <div>
+        <button id="claimBtn" onclick="claimMining()" style="background:#2ecc71;">💎 Claim Mining</button>
+      </div>
+    </div>
 
-<div class="card">
-  <h3>Login</h3>
-  <input id="lemail" placeholder="Email">
-  <input id="lpass" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-</div>
+    <div class="card">
+      <h3>🔗 Referral</h3>
+      <p>Your Referral ID: <strong id="myReferralId"></strong></p>
+      <p>Referral Earnings: <strong id="referralEarnings">0</strong> DGW</p>
+      <button onclick="copyReferralLink()">📋 Copy Referral Link</button>
+    </div>
 
-<div class="card" id="dashboard">
-  <h3>Balance</h3>
-  <h2><span id="balance">0</span> DGW</h2>
-  <button onclick="mine()">Start Mining</button>
+    <div class="card">
+      <h3>💸 Send Tokens</h3>
+      <input id="sendToEmail" placeholder="Receiver Email">
+      <input id="sendAmount" type="number" placeholder="Amount">
+      <button onclick="sendTokens()">Send</button>
+    </div>
+
+    <div class="card">
+      <h3>📢 Announcements</h3>
+      <div id="announcementsList"></div>
+    </div>
+
+    <!-- Admin Panel (only visible for admin) -->
+    <div id="adminPanel" class="hide admin-panel">
+      <h3>🛡️ Admin Controls</h3>
+      <div>
+        <input id="adminSpeed" type="number" step="0.0001" placeholder="Mining Speed (DGW/sec)">
+        <button onclick="setMiningSpeed()">Set Speed</button>
+      </div>
+      <div>
+        <button id="toggleMiningGlobalBtn" onclick="toggleMiningGlobal()">Disable Mining</button>
+      </div>
+      <div>
+        <textarea id="announcementText" placeholder="New announcement..." rows="2"></textarea>
+        <button onclick="postAnnouncement()">Post Announcement</button>
+      </div>
+      <div>
+        <h4>All Users</h4>
+        <div id="usersList" class="user-list"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbx4UDcBBNZ1o-6WvOTWEoonSaF3YbgdQXBnmSuXlnxbZ1O1oiihEctj7ATF05RObRczXQ/exec";
+  // ========================
+  // YOUR NEW WEB APP URL
+  // ========================
+  const API = "https://script.google.com/macros/s/AKfycbyyKK0e-AVfQIhWUCa_ojjos269uAMKqJpQk3FwcxYLDVc_w-wNPL2T8uaEoG8MkLS-VA/exec";
 
-let user_id = "";
+  let currentUser = null;
+  let miningInterval = null;
 
-// ✅ FIXED SIGNUP
-async function signup() {
-  const nameVal = document.getElementById("name").value.trim();
-  const emailVal = document.getElementById("email").value.trim();
-  const passVal = document.getElementById("pass").value.trim();
-
-  console.log("DEBUG:", nameVal, emailVal, passVal); // 👈 debug
-
-  if (!nameVal || !emailVal || !passVal) {
-    alert("Please fill all fields");
-    return;
+  // Helper fetch
+  async function callApi(action, payload = {}) {
+    const res = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify({ action, ...payload }),
+      headers: { "Content-Type": "application/json" }
+    });
+    return await res.json();
   }
 
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "signup",
-      name: nameVal,
-      email: emailVal,
-      password: passVal
-    })
-  });
+  // Auto login from localStorage
+  (function() {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try {
+        currentUser = JSON.parse(stored);
+        showDashboard();
+      } catch(e) {}
+    }
+  })();
 
-  const data = await res.json();
-  alert(JSON.stringify(data));
-}
-
-// ✅ FIXED LOGIN
-async function login() {
-  const emailVal = document.getElementById("lemail").value.trim();
-  const passVal = document.getElementById("lpass").value.trim();
-
-  if (!emailVal || !passVal) {
-    alert("Please fill all fields");
-    return;
+  async function signup() {
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const pass = document.getElementById("signupPass").value.trim();
+    const referrerId = document.getElementById("referrerId").value.trim();
+    if (!name || !email || !pass) return alert("Fill all fields");
+    const res = await callApi("signup", { name, email, password: pass, referrerId });
+    if (res.success) {
+      alert("Signup successful! Now login.");
+    } else {
+      alert(res.data?.message || "Signup failed");
+    }
   }
 
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "login",
-      email: emailVal,
-      password: passVal
-    })
-  });
-
-  const data = await res.json();
-
-  if (data.status === "success") {
-    user_id = data.user_id;
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("balance").innerText = data.balance;
-  } else {
-    alert("Login failed");
+  async function login() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const pass = document.getElementById("loginPass").value.trim();
+    if (!email || !pass) return alert("Fill all fields");
+    const res = await callApi("login", { email, password: pass });
+    if (res.success && res.data.status === "success") {
+      currentUser = res.data;
+      delete currentUser.password;
+      localStorage.setItem("user", JSON.stringify(currentUser));
+      showDashboard();
+    } else {
+      alert(res.data?.message || "Login failed");
+    }
   }
-}
 
-// ✅ MINING
-async function mine() {
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "mine",
-      user_id: user_id
-    })
-  });
+  async function showDashboard() {
+    document.getElementById("authSection").classList.add("hide");
+    document.getElementById("dashboard").classList.remove("hide");
+    document.getElementById("balance").innerText = parseFloat(currentUser.balance).toFixed(4);
+    document.getElementById("myReferralId").innerText = currentUser.userId;
+    document.getElementById("referralEarnings").innerText = parseFloat(currentUser.referralEarnings).toFixed(4);
+    document.getElementById("verifiedBadge").style.display = currentUser.verified ? "inline-block" : "none";
 
-  const data = await res.json();
-  document.getElementById("balance").innerText = data.balance;
-}
+    if (miningInterval) clearInterval(miningInterval);
+    miningInterval = setInterval(updateMiningStatus, 1000);
+    updateMiningStatus();
+    loadAnnouncements();
+    if (currentUser.email === "dgadmin@dgwallet.com") {
+      document.getElementById("adminPanel").classList.remove("hide");
+      loadAdminUsers();
+    } else {
+      document.getElementById("adminPanel").classList.add("hide");
+    }
+  }
+
+  async function updateMiningStatus() {
+    if (!currentUser) return;
+    const res = await callApi("getMiningStatus", { userId: currentUser.userId });
+    if (res.success) {
+      const status = res.data;
+      const startBtn = document.getElementById("startMiningBtn");
+      const statusDiv = document.getElementById("miningStatus");
+      if (status.miningActive) {
+        startBtn.style.display = "none";
+        statusDiv.innerHTML = `⛏️ Mining active: ${formatTime(status.remainingSeconds)} remaining<br>Earned so far: ${status.earnedPoints.toFixed(4)} DGW`;
+        statusDiv.classList.add("mining-active");
+        // Update live balance with earned points
+        const currentBalance = parseFloat(currentUser.balance) + status.earnedPoints;
+        document.getElementById("balance").innerText = currentBalance.toFixed(4);
+      } else {
+        startBtn.style.display = "block";
+        statusDiv.innerHTML = "";
+        statusDiv.classList.remove("mining-active");
+        if (status.earnedPoints > 0) {
+          alert(`Mining completed! You earned ${status.earnedPoints.toFixed(4)} DGW.`);
+          refreshUserData();
+        }
+      }
+    }
+  }
+
+  async function startMining() {
+    const res = await callApi("startMining", { userId: currentUser.userId });
+    if (res.success && res.data.status === "success") {
+      alert("Mining started! It will run for 24 hours.");
+      refreshUserData();
+    } else {
+      alert(res.data?.message || "Failed to start mining");
+    }
+  }
+
+  async function claimMining() {
+    const res = await callApi("claimMining", { userId: currentUser.userId });
+    if (res.success) {
+      alert(res.data.message);
+      refreshUserData();
+    } else {
+      alert(res.data?.message);
+    }
+  }
+
+  async function refreshUserData() {
+    const res = await callApi("getUser", { userId: currentUser.userId });
+    if (res.success) {
+      currentUser = { ...currentUser, ...res.data };
+      localStorage.setItem("user", JSON.stringify(currentUser));
+      document.getElementById("balance").innerText = parseFloat(currentUser.balance).toFixed(4);
+      document.getElementById("referralEarnings").innerText = parseFloat(currentUser.referralEarnings).toFixed(4);
+      document.getElementById("verifiedBadge").style.display = currentUser.verified ? "inline-block" : "none";
+    } else {
+      console.error("Failed to refresh user");
+    }
+  }
+
+  async function sendTokens() {
+    const toEmail = document.getElementById("sendToEmail").value.trim();
+    const amount = parseFloat(document.getElementById("sendAmount").value);
+    if (!toEmail || isNaN(amount) || amount <= 0) return alert("Invalid input");
+    const res = await callApi("sendTokens", { senderId: currentUser.userId, receiverEmail: toEmail, amount });
+    if (res.success) {
+      alert(res.data.message);
+      refreshUserData();
+    } else {
+      alert(res.data?.message);
+    }
+  }
+
+  async function loadAnnouncements() {
+    const res = await callApi("getAnnouncements");
+    if (res.success) {
+      const container = document.getElementById("announcementsList");
+      container.innerHTML = "";
+      (res.data || []).forEach(ann => {
+        const div = document.createElement("div");
+        div.className = "announcement";
+        div.innerHTML = `<strong>📢 ${new Date(ann.timestamp).toLocaleString()}</strong><br>${ann.text}`;
+        container.appendChild(div);
+      });
+    }
+  }
+
+  // Admin functions
+  async function loadAdminUsers() {
+    const res = await callApi("getAllUsers");
+    if (res.success) {
+      const users = res.data;
+      const container = document.getElementById("usersList");
+      container.innerHTML = "";
+      users.forEach(u => {
+        const div = document.createElement("div");
+        div.className = "user-item";
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(u.name)}</strong> (${escapeHtml(u.email)})<br>
+            Balance: ${u.balance.toFixed(4)} | ${u.verified ? "✓ Verified" : "✗ Unverified"} | ${u.blocked ? "🚫 Blocked" : "✅ Active"}
+          </div>
+          <div>
+            <button onclick="adminVerify('${u.userId}')">Verify</button>
+            <button onclick="adminUnverify('${u.userId}')">Unverify</button>
+            <button onclick="adminBlock('${u.userId}', true)">Block</button>
+            <button onclick="adminBlock('${u.userId}', false)">Unblock</button>
+            <button onclick="adminToggleMining('${u.userId}', true)">Start Mining</button>
+            <button onclick="adminToggleMining('${u.userId}', false)">Stop Mining</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+  }
+
+  async function adminVerify(userId) {
+    const res = await callApi("verifyUser", { adminEmail: currentUser.email, adminPassword: currentUser.password, userId });
+    if (res.success) alert(res.data.message);
+    else alert(res.data?.message);
+    loadAdminUsers();
+  }
+
+  async function adminUnverify(userId) {
+    const res = await callApi("unverifyUser", { adminEmail: currentUser.email, adminPassword: currentUser.password, userId });
+    if (res.success) alert(res.data.message);
+    else alert(res.data?.message);
+    loadAdminUsers();
+  }
+
+  async function adminBlock(userId, block) {
+    const res = await callApi("blockUser", { adminEmail: currentUser.email, adminPassword: currentUser.password, userId, block });
+    if (res.success) alert(res.data.message);
+    else alert(res.data?.message);
+    loadAdminUsers();
+  }
+
+  async function adminToggleMining(userId, enable) {
+    const res = await callApi("toggleMiningForUser", { adminEmail: currentUser.email, adminPassword: currentUser.password, userId, enable });
+    if (res.success) alert(res.data.message);
+    else alert(res.data?.message);
+    loadAdminUsers();
+  }
+
+  async function setMiningSpeed() {
+    const speed = parseFloat(document.getElementById("adminSpeed").value);
+    if (isNaN(speed)) return alert("Enter valid speed");
+    const res = await callApi("setMiningSpeed", { adminEmail: currentUser.email, adminPassword: currentUser.password, speed });
+    if (res.success) alert(res.data.message);
+    else alert(res.data?.message);
+  }
+
+  async function toggleMiningGlobal() {
+    const enabled = !(await getGlobalMiningEnabled());
+    const res = await callApi("setMiningGlobalEnabled", { adminEmail: currentUser.email, adminPassword: currentUser.password, enabled });
+    if (res.success) {
+      alert(res.data.message);
+      document.getElementById("toggleMiningGlobalBtn").innerText = enabled ? "Disable Mining" : "Enable Mining";
+    } else alert(res.data?.message);
+  }
+
+  async function postAnnouncement() {
+    const text = document.getElementById("announcementText").value.trim();
+    if (!text) return alert("Enter announcement text");
+    const res = await callApi("postAnnouncement", { adminEmail: currentUser.email, adminPassword: currentUser.password, text });
+    if (res.success) {
+      alert("Announcement posted");
+      loadAnnouncements();
+      document.getElementById("announcementText").value = "";
+    } else alert(res.data?.message);
+  }
+
+  async function getGlobalMiningEnabled() {
+    const res = await callApi("getSetting", { key: "miningGlobalEnabled" });
+    return res.success ? res.data.value : true;
+  }
+
+  function copyReferralLink() {
+    const link = `${window.location.origin}${window.location.pathname}?ref=${currentUser.userId}`;
+    navigator.clipboard.writeText(link);
+    alert("Referral link copied!");
+  }
+
+  function formatTime(sec) {
+    const hours = Math.floor(sec / 3600);
+    const minutes = Math.floor((sec % 3600) / 60);
+    const seconds = Math.floor(sec % 60);
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Logout
+  window.logout = function() {
+    localStorage.removeItem("user");
+    location.reload();
+  };
 </script>
-
 </body>
 </html>
