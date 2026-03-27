@@ -3,270 +3,577 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>DG Wallet</title>
+  <title>DG WALLET - DollGo</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-    body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #fff; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    /* Auth forms */
-    .auth-form { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 24px; padding: 24px; margin-top: 40px; }
-    .auth-form h2 { text-align: center; margin-bottom: 24px; color: #ff9800; }
-    .input-group { margin-bottom: 16px; }
-    .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 16px; border: none; border-radius: 12px; background: rgba(255,255,255,0.2); color: #fff; font-size: 16px; }
-    .input-group input::placeholder, .input-group textarea::placeholder { color: rgba(255,255,255,0.7); }
-    button { width: 100%; padding: 12px; background: #ff9800; border: none; border-radius: 12px; color: #1a1a2e; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.3s; }
-    button:hover { background: #ffb74d; }
-    .toggle-link { text-align: center; margin-top: 16px; font-size: 14px; }
-    .toggle-link span { color: #ff9800; cursor: pointer; }
+    body {
+      font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
 
-    /* Dashboard */
-    .dashboard { display: none; }
-    .balance-card { background: rgba(255,255,255,0.1); border-radius: 24px; padding: 24px; text-align: center; margin-bottom: 24px; }
-    .balance-card h3 { font-size: 14px; opacity: 0.8; margin-bottom: 8px; }
-    .balance-card .balance { font-size: 48px; font-weight: bold; color: #ff9800; }
-    .mining-btn { background: #ff9800; padding: 16px; border-radius: 60px; font-size: 20px; font-weight: bold; margin: 24px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    .stats { display: flex; justify-content: space-between; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 16px; margin-bottom: 24px; }
-    .stat { text-align: center; }
-    .stat .label { font-size: 12px; opacity: 0.8; }
-    .stat .value { font-size: 18px; font-weight: bold; }
-    .tabs { display: flex; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.2); }
-    .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: rgba(255,255,255,0.6); }
-    .tab.active { color: #ff9800; border-bottom: 2px solid #ff9800; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .transaction-item, .task-item, .referral-item { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .withdraw-form { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; }
-    .referral-code { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; font-family: monospace; font-size: 18px; text-align: center; margin: 10px 0; }
-    .error-message { background: #ff4444; color: white; padding: 12px; border-radius: 12px; margin-bottom: 16px; display: none; }
+    .app-container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 1rem;
+      position: relative;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .menu-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+      transition: 0.3s;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 280px;
+      height: 100%;
+      background: #0f172a;
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255,255,255,0.1);
+      transition: 0.3s ease;
+      z-index: 1000;
+      padding: 2rem 1rem;
+      box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+    }
+
+    .drawer.open {
+      left: 0;
+    }
+
+    .drawer a {
+      display: block;
+      color: #cbd5e1;
+      text-decoration: none;
+      padding: 0.8rem 1rem;
+      margin: 0.5rem 0;
+      border-radius: 16px;
+      transition: 0.2s;
+    }
+
+    .drawer a:hover, .drawer a:active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .drawer .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.8rem;
+      float: right;
+      cursor: pointer;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(3px);
+      z-index: 999;
+      display: none;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 32px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .balance-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1rem;
+    }
+
+    .balance-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #facc15;
+    }
+
+    .badge {
+      background: #334155;
+      padding: 0.3rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .verified {
+      background: #10b981;
+      color: white;
+    }
+
+    .unverified {
+      background: #ef4444;
+    }
+
+    button {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      border: none;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .grid-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 40px;
+      border: 1px solid #475569;
+      background: #1e293b;
+      color: white;
+      margin-bottom: 0.8rem;
+    }
+
+    .alert {
+      padding: 0.8rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .alert-error {
+      background: rgba(239,68,68,0.2);
+      border-left: 4px solid #ef4444;
+    }
+
+    .alert-success {
+      background: rgba(16,185,129,0.2);
+      border-left: 4px solid #10b981;
+    }
+
+    .avatar-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .address {
+      font-size: 0.7rem;
+      font-family: monospace;
+      background: #00000030;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 2rem;
+    }
+
+    .admin-panel {
+      background: #0f172a;
+      border-radius: 32px;
+      padding: 1.2rem;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <div id="errorBox" class="error-message"></div>
-
-  <!-- Auth Forms -->
-  <div id="authContainer">
-    <div id="loginForm" class="auth-form">
-      <h2>DG Wallet</h2>
-      <div class="input-group"><input type="email" id="loginEmail" placeholder="Email"></div>
-      <div class="input-group"><input type="password" id="loginPassword" placeholder="Password"></div>
-      <button id="loginBtn">Login</button>
-      <div class="toggle-link">Don't have an account? <span id="showSignup">Sign up</span></div>
-    </div>
-    <div id="signupForm" class="auth-form" style="display:none">
-      <h2>Create Account</h2>
-      <div class="input-group"><input type="text" id="signupName" placeholder="Full Name"></div>
-      <div class="input-group"><input type="email" id="signupEmail" placeholder="Email"></div>
-      <div class="input-group"><input type="password" id="signupPassword" placeholder="Password"></div>
-      <div class="input-group"><input type="text" id="signupReferral" placeholder="Referral Code (optional)"></div>
-      <button id="signupBtn">Sign Up</button>
-      <div class="toggle-link">Already have an account? <span id="showLogin">Login</span></div>
-    </div>
+<div class="app-container">
+  <div class="header">
+    <div class="logo">DG WALLET</div>
+    <button class="menu-btn" id="menuBtn">☰</button>
   </div>
 
-  <!-- Dashboard (hidden until login) -->
-  <div id="dashboard" class="dashboard">
-    <div class="balance-card">
-      <h3>Your Balance</h3>
-      <div class="balance" id="balanceAmount">0.00</div>
-      <div style="font-size: 12px; margin-top: 8px;">DGW Tokens</div>
-    </div>
+  <div class="drawer" id="drawer">
+    <button class="close-btn" id="closeDrawer">✕</button>
+    <a href="#" data-page="dashboard">📊 Dashboard</a>
+    <a href="#" data-page="create">✨ Create Wallet</a>
+    <a href="#" data-page="farming">🌾 Farming Account</a>
+    <a href="#" data-page="mainFarming">💰 Main Wallet Farming</a>
+    <a href="#" data-page="transfer">💸 Transfer</a>
+    <a href="#" data-page="internal">🔄 Farming → Main</a>
+    <a href="#" data-page="admin">⚙️ Admin Panel</a>
+    <hr style="margin: 1rem 0; border-color: #334155;">
+    <a href="#" data-page="howto">📘 How to Create Wallet</a>
+    <a href="#" data-page="verify">✅ How to Get Verified</a>
+  </div>
+  <div class="overlay" id="overlay"></div>
 
-    <div class="stats">
-      <div class="stat"><div class="label">Mining Rate</div><div class="value" id="miningRate">0.10</div><div class="label">DGW/click</div></div>
-      <div class="stat"><div class="label">Referrals</div><div class="value" id="referralCount">0</div></div>
-    </div>
-
-    <button id="mineBtn" class="mining-btn">⛏️ MINE NOW</button>
-
-    <div class="tabs">
-      <div class="tab active" data-tab="transactions">History</div>
-      <div class="tab" data-tab="referral">Referral</div>
-      <div class="tab" data-tab="withdraw">Withdraw</div>
-    </div>
-
-    <div id="transactionsContent" class="tab-content active">
-      <div id="transactionsList">No transactions yet.</div>
-    </div>
-    <div id="referralContent" class="tab-content">
-      <div style="margin-bottom: 16px;">
-        <strong>Your Referral Code:</strong>
-        <div id="referralCodeDisplay" class="referral-code">Loading...</div>
-        <button id="copyReferralBtn">Copy Code</button>
-      </div>
-      <div><strong>Referred Users:</strong></div>
-      <div id="referralsList"></div>
-    </div>
-    <div id="withdrawContent" class="tab-content">
-      <div class="withdraw-form">
-        <div class="input-group"><input type="number" id="withdrawAmount" placeholder="Amount (DGW)"></div>
-        <div class="input-group"><input type="text" id="withdrawWallet" placeholder="Wallet Address"></div>
-        <button id="withdrawBtn">Request Withdrawal</button>
-      </div>
-      <div id="withdrawMessage"></div>
+  <div id="mainContent">
+    <div class="card" style="text-align: center;">
+      <h3>Welcome to DG WALLET</h3>
+      <p>Simulated crypto wallet with DGUSDT token</p>
+      <button id="createWalletBtn">Create New Wallet</button>
     </div>
   </div>
+  <footer>DG WALLET • DollGo Token • 1 DGUSDT = 1 USD</footer>
 </div>
 
 <script>
-  // ========== CONFIGURATION ==========
-  const API_URL = "https://script.google.com/macros/s/AKfycbxmjRu1PrpbBRX_PLodO2phEcY4LkFdm82T77yKSURzqokxCSy8c2rWwD35IGXmefY/exec";
-  let userId = null;
+  // ========================
+  // YOUR WEB APP URL (REPLACED)
+  // ========================
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSK05UzUNZPymKA6AGaz58iMmNLlZhF7bZ3KYgsgRGoTO4B71QZpXv_MuoddWiqsbV6Q/exec";
 
-  function showError(msg) {
-    const box = document.getElementById("errorBox");
-    box.innerText = msg;
-    box.style.display = "block";
-    setTimeout(() => box.style.display = "none", 5000);
+  let currentUser = null; // stores publicAddress, avatar, balances, etc.
+
+  // Helper: call backend
+  async function callBackend(action, payload = {}) {
+    const body = { action, ...payload };
+    const response = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const json = await response.json();
+    if (!json.success) throw new Error(json.error);
+    return json.data;
   }
 
-  async function apiCall(path, data = {}) {
+  // Refresh user data and update UI
+  async function refreshUserData() {
+    if (!currentUser || !currentUser.publicAddress) return;
     try {
-      const url = `${API_URL}?path=${path}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
+      const data = await callBackend("getUserData", { address: currentUser.publicAddress });
+      currentUser = { ...currentUser, ...data };
+      renderDashboard();
     } catch (err) {
-      showError("Network error: " + err.message);
-      throw err;
+      showAlert(err.message, "error");
     }
   }
 
-  // Auth
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
-    if (!email || !password) return showError("Please enter email and password");
-    const res = await apiCall("login", { email, password });
-    if (res.success) {
-      userId = res.userId;
-      showDashboard();
-      loadDashboard();
-    } else {
-      showError("Login failed: " + (res.error || "Unknown error"));
-    }
-  });
-
-  document.getElementById("signupBtn").addEventListener("click", async () => {
-    const name = document.getElementById("signupName").value;
-    const email = document.getElementById("signupEmail").value;
-    const password = document.getElementById("signupPassword").value;
-    const referral = document.getElementById("signupReferral").value;
-    if (!name || !email || !password) return showError("Please fill all fields");
-    const res = await apiCall("signup", { name, email, password, referral });
-    if (res.success) {
-      alert("Signup successful! Please login.");
-      document.getElementById("loginForm").style.display = "block";
-      document.getElementById("signupForm").style.display = "none";
-    } else {
-      showError("Signup failed: " + (res.error || "Unknown error"));
-    }
-  });
-
-  document.getElementById("showSignup").addEventListener("click", () => {
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("signupForm").style.display = "block";
-  });
-  document.getElementById("showLogin").addEventListener("click", () => {
-    document.getElementById("loginForm").style.display = "block";
-    document.getElementById("signupForm").style.display = "none";
-  });
-
-  async function showDashboard() {
-    document.getElementById("authContainer").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-  }
-
-  async function loadDashboard() {
-    const res = await apiCall("dashboard", { userId });
-    if (res.balance !== undefined) {
-      document.getElementById("balanceAmount").innerText = res.balance.toFixed(4);
-    } else if (res.error) {
-      showError("Dashboard error: " + res.error);
-    }
-    loadReferralInfo();
-  }
-
-  async function loadReferralInfo() {
-    try {
-      const res = await apiCall("getReferralInfo", { userId });
-      if (res.referral_code) {
-        document.getElementById("referralCodeDisplay").innerText = res.referral_code;
-        document.getElementById("referralCount").innerText = res.referrals ? res.referrals.length : 0;
-        const listDiv = document.getElementById("referralsList");
-        if (res.referrals && res.referrals.length > 0) {
-          listDiv.innerHTML = res.referrals.map(ref => `<div class="referral-item">${ref.name || ref.email}</div>`).join("");
-        } else {
-          listDiv.innerHTML = "<div>No referrals yet.</div>";
-        }
-      } else {
-        // Fallback
-        document.getElementById("referralCodeDisplay").innerText = userId ? userId.slice(0,6).toUpperCase() : "N/A";
-        document.getElementById("referralsList").innerHTML = "<div>Referral tracking requires backend update.</div>";
-      }
-    } catch (e) {
-      document.getElementById("referralCodeDisplay").innerText = "Not available";
-      document.getElementById("referralsList").innerHTML = "<div>Referral endpoint not ready.</div>";
-    }
-  }
-
-  document.getElementById("mineBtn").addEventListener("click", async () => {
-    const btn = document.getElementById("mineBtn");
-    btn.disabled = true;
-    btn.innerText = "Mining...";
-    const res = await apiCall("mine", { userId });
-    if (res.earned !== undefined) {
-      alert(`You mined ${res.earned.toFixed(4)} DGW!`);
-      loadDashboard();
-    } else {
-      showError("Mining failed: " + (res.error || "Unknown error"));
-    }
-    btn.disabled = false;
-    btn.innerText = "⛏️ MINE NOW";
-  });
-
-  document.getElementById("withdrawBtn").addEventListener("click", async () => {
-    const amount = parseFloat(document.getElementById("withdrawAmount").value);
-    const wallet = document.getElementById("withdrawWallet").value;
-    if (!amount || !wallet) {
-      showError("Please enter amount and wallet address");
+  // Dashboard UI
+  function renderDashboard() {
+    if (!currentUser) {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="card" style="text-align: center;">
+          <h3>No wallet loaded</h3>
+          <button id="createWalletBtn">Create New Wallet</button>
+        </div>
+      `;
+      document.getElementById('createWalletBtn')?.addEventListener('click', createWallet);
       return;
     }
-    const res = await apiCall("withdraw", { userId, amount, wallet });
-    if (res.success) {
-      alert("Withdrawal request submitted.");
-      loadDashboard();
-    } else {
-      showError("Withdrawal error: " + (res.error || "Unknown error"));
-    }
-  });
 
-  document.getElementById("copyReferralBtn").addEventListener("click", () => {
-    const code = document.getElementById("referralCodeDisplay").innerText;
-    if (code && code !== "Loading..." && code !== "Not available") {
-      navigator.clipboard.writeText(code);
-      alert("Referral code copied!");
-    } else {
-      showError("No referral code available yet.");
-    }
-  });
+    const avatar = currentUser.avatar;
+    const verifiedClass = currentUser.isVerified ? "verified" : "unverified";
+    const verifiedText = currentUser.isVerified ? "Verified ✓" : "Unverified";
+    const frozenBadge = currentUser.isFrozen ? "🔒 Frozen" : "";
 
-  // Tab switching
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      const tabId = tab.getAttribute("data-tab");
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
-      document.getElementById(tabId + "Content").classList.add("active");
-      if (tabId === "referral") loadReferralInfo();
+    document.getElementById('mainContent').innerHTML = `
+      <div class="card">
+        <div class="user-info">
+          <div class="avatar-circle" style="background: ${avatar.color}">${avatar.initial}</div>
+          <div>
+            <strong>${currentUser.publicAddress}</strong>
+            <div class="address">${currentUser.publicAddress.slice(0,8)}...${currentUser.publicAddress.slice(-4)}</div>
+          </div>
+        </div>
+        <div class="balance-row">
+          <span>💰 Main Wallet</span>
+          <span class="balance-amount">${currentUser.mainBalance.toFixed(2)} DGUSDT</span>
+        </div>
+        <div class="balance-row">
+          <span>🌾 Farming Wallet</span>
+          <span class="balance-amount">${currentUser.farmingBalance.toFixed(2)} DGUSDT</span>
+        </div>
+        <div>
+          <span class="badge ${verifiedClass}">${verifiedText}</span>
+          ${frozenBadge ? `<span class="badge" style="background:#ef4444">${frozenBadge}</span>` : ''}
+        </div>
+      </div>
+      <div class="grid-buttons">
+        <button id="dailyCheckinBtn">🌾 Daily Check-in (+0.1)</button>
+        <button id="mainFarmingBtn">⚡ Main Farming (+1)</button>
+        <button id="transferBtn">💸 Transfer</button>
+        <button id="internalBtn">🔄 Farming→Main</button>
+      </div>
+    `;
+
+    document.getElementById('dailyCheckinBtn')?.addEventListener('click', async () => {
+      try {
+        await callBackend("dailyCheckIn", { address: currentUser.publicAddress });
+        showAlert("Daily check-in successful! +0.1 DGUSDT", "success");
+        refreshUserData();
+      } catch (err) { showAlert(err.message, "error"); }
     });
-  });
-</script>
-</body>
-</html>
+    document.getElementById('mainFarmingBtn')?.addEventListener('click', async () => {
+      try {
+        await callBackend("mainFarmingCheckIn", { address: currentUser.publicAddress });
+        showAlert("Main wallet farming reward claimed! +1 DGUSDT", "success");
+        refreshUserData();
+      } catch (err) { showAlert(err.message, "error"); }
+    });
+    document.getElementById('transferBtn')?.addEventListener('click', () => showPage('transfer'));
+    document.getElementById('internalBtn')?.addEventListener('click', () => showPage('internal'));
+  }
+
+  async function createWallet() {
+    try {
+      const data = await callBackend("createWallet");
+      currentUser = {
+        publicAddress: data.publicAddress,
+        avatar: data.avatar,
+        mainBalance: data.mainBalance,
+        farmingBalance: data.farmingBalance,
+        isVerified: data.isVerified,
+        isFrozen: false
+      };
+      showAlert(`Wallet created! Address: ${data.publicAddress}`, "success");
+      renderDashboard();
+      // Store in localStorage
+      localStorage.setItem('dgUser', JSON.stringify(currentUser));
+    } catch (err) {
+      showAlert(err.message, "error");
+    }
+  }
+
+  async function loadStoredUser() {
+    const stored = localStorage.getItem('dgUser');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const fresh = await callBackend("getUserData", { address: parsed.publicAddress });
+        currentUser = { ...parsed, ...fresh };
+        renderDashboard();
+      } catch (e) {
+        console.warn("Stored user invalid, create new.");
+        localStorage.removeItem('dgUser');
+      }
+    }
+  }
+
+  // Admin functions
+  async function adminLogin() {
+    const pwd = prompt("Enter admin password:");
+    if (!pwd) return false;
+    window.adminPassword = pwd;
+    try {
+      await callBackend("admin", { adminAction: "listUsers", params: {}, password: pwd });
+      showAlert("Admin logged in", "success");
+      return true;
+    } catch (err) {
+      showAlert("Wrong password", "error");
+      return false;
+    }
+  }
+
+  async function showAdminPanel() {
+    if (!window.adminPassword) {
+      const ok = await adminLogin();
+      if (!ok) return;
+    }
+    try {
+      const users = await callBackend("admin", { adminAction: "listUsers", params: {}, password: window.adminPassword });
+      const transactions = await callBackend("admin", { adminAction: "listTransactions", params: {}, password: window.adminPassword });
+      let html = `<div class="admin-panel"><h3>Admin Panel</h3>
+        <h4>Users</h4><table style="width:100%;font-size:12px;">`;
+      users.forEach(u => {
+        html += `<tr><td>${u.publicAddress.slice(0,8)}</td><td>${u.mainBalance}</td><td>${u.farmingBalance}</td><td>${u.isVerified}</td><td>${u.isFrozen}</td></tr>`;
+      });
+      html += `</table><h4>Recent Transactions</h4><table style="width:100%;font-size:12px;">`;
+      transactions.slice(0, 10).forEach(t => {
+        html += `<tr><td>${t.from.slice(0,6)}</td><td>${t.to.slice(0,6)}</td><td>${t.amount}</td><td>${t.type}</td></tr>`;
+      });
+      html += `</table>
+        <h4>Adjust Balance</h4>
+        <input id="adjAddress" placeholder="Address"><input id="adjAmount" placeholder="Amount (+/-)"><select id="adjType"><option>main</option><option>farming</option></select>
+        <button id="adjBtn">Apply</button>
+        <h4>Freeze User</h4>
+        <input id="freezeAddress" placeholder="Address"><button id="freezeBtn">Freeze</button><button id="unfreezeBtn">Unfreeze</button>
+        <h4>Manual Verify</h4>
+        <input id="verifyAddress" placeholder="Address"><button id="verifyBtn">Verify</button>
+        <h4>Change Setting</h4>
+        <input id="settingKey" placeholder="Key (e.g. farmingDailyReward)"><input id="settingValue" placeholder="Value"><button id="setSettingBtn">Set</button>
+      </div>`;
+      document.getElementById('mainContent').innerHTML = html;
+      document.getElementById('adjBtn')?.addEventListener('click', async () => {
+        const address = document.getElementById('adjAddress').value;
+        const amount = parseFloat(document.getElementById('adjAmount').value);
+        const type = document.getElementById('adjType').value;
+        if (!address || isNaN(amount)) return;
+        await callBackend("admin", { adminAction: "adjustBalance", params: { address, amount, walletType: type }, password: window.adminPassword });
+        showAlert("Balance adjusted", "success");
+        showAdminPanel();
+      });
+      document.getElementById('freezeBtn')?.addEventListener('click', async () => {
+        const address = document.getElementById('freezeAddress').value;
+        await callBackend("admin", { adminAction: "freezeUser", params: { address, frozen: true }, password: window.adminPassword });
+        showAlert("User frozen", "success");
+      });
+      document.getElementById('unfreezeBtn')?.addEventListener('click', async () => {
+        const address = document.getElementById('freezeAddress').value;
+        await callBackend("admin", { adminAction: "freezeUser", params: { address, frozen: false }, password: window.adminPassword });
+        showAlert("User unfrozen", "success");
+      });
+      document.getElementById('verifyBtn')?.addEventListener('click', async () => {
+        const address = document.getElementById('verifyAddress').value;
+        await callBackend("admin", { adminAction: "manualVerify", params: { address }, password: window.adminPassword });
+        showAlert("User verified manually", "success");
+      });
+      document.getElementById('setSettingBtn')?.addEventListener('click', async () => {
+        const key = document.getElementById('settingKey').value;
+        const value = parseFloat(document.getElementById('settingValue').value);
+        await callBackend("admin", { adminAction: "changeSetting", params: { key, value }, password: window.adminPassword });
+        showAlert("Setting updated", "success");
+      });
+    } catch (err) {
+      showAlert(err.message, "error");
+    }
+  }
+
+  // Page navigation
+  async function showPage(page) {
+    switch(page) {
+      case 'dashboard':
+        renderDashboard();
+        break;
+      case 'create':
+        document.getElementById('mainContent').innerHTML = `<div class="card"><button id="createNow">Create Wallet</button></div>`;
+        document.getElementById('createNow')?.addEventListener('click', createWallet);
+        break;
+      case 'transfer':
+        document.getElementById('mainContent').innerHTML = `
+          <div class="card">
+            <h3>Transfer DGUSDT</h3>
+            <input id="toAddress" placeholder="Recipient DG address">
+            <input id="amount" placeholder="Amount (min 5)">
+            <button id="doTransfer">Send</button>
+          </div>`;
+        document.getElementById('doTransfer')?.addEventListener('click', async () => {
+          const to = document.getElementById('toAddress').value;
+          const amount = parseFloat(document.getElementById('amount').value);
+          if (!to || isNaN(amount)) return;
+          try {
+            await callBackend("transfer", { fromAddress: currentUser.publicAddress, toAddress: to, amount });
+            showAlert("Transfer successful", "success");
+            refreshUserData();
+          } catch (err) { showAlert(err.message, "error"); }
+        });
+        break;
+      case 'internal':
+        document.getElementById('mainContent').innerHTML = `
+          <div class="card">
+            <h3>Farming → Main Wallet</h3>
+            <input id="internalAmount" placeholder="Amount (min 5)">
+            <button id="doInternal">Transfer</button>
+          </div>`;
+        document.getElementById('doInternal')?.addEventListener('click', async () => {
+          const amount = parseFloat(document.getElementById('internalAmount').value);
+          if (isNaN(amount)) return;
+          try {
+            await callBackend("internalTransfer", { address: currentUser.publicAddress, amount });
+            showAlert("Internal transfer successful", "success");
+            refreshUserData();
+          } catch (err) { showAlert(err.message, "error"); }
+        });
+        break;
+      case 'farming':
+        document.getElementById('mainContent').innerHTML = `<div class="card"><h3>Farming Account</h3><p>Daily check-in: +0.1 DGUSDT. Miss a day: -0.05 penalty.</p><button id="farmCheckin">Check-in Now</button></div>`;
+        document.getElementById('farmCheckin')?.addEventListener('click', async () => {
+          await callBackend("dailyCheckIn", { address: currentUser.publicAddress });
+          refreshUserData();
+        });
+        break;
+      case 'mainFarming':
+        document.getElementById('mainContent').innerHTML = `<div class="card"><h3>Main Wallet Farming</h3><p>Hold ≥100 DGUSDT and be verified to earn +1 DGUSDT every 24h.</p><button id="mainFarmBtn">Claim Reward</button></div>`;
+        document.getElementById('mainFarmBtn')?.addEventListener('click', async () => {
+          await callBackend("mainFarmingCheckIn", { address: currentUser.publicAddress });
+          refreshUserData();
+        });
+        break;
+      case 'admin':
+        await showAdminPanel();
+        break;
+      case 'howto':
+        document.getElementById('mainContent').innerHTML = `<div class="card"><h3>How to Create Wallet</h3><p>Click "Create New Wallet" – no signup needed. Your unique address and avatar will be generated automatically.</p></div>`;
+        break;
+      case 'verify':
+        document.getElementById('mainContent').innerHTML = `<div class="card"><h3>How to Get Verified</h3><p>Either:</p><ul><li>Farming Account ≥10 DGUSDT AND Main Wallet ≥5 DGUSDT, OR</li><li>Send 5 USDT (BEP20) to dev wallet and submit proof to admin.</li></ul></div>`;
+        break;
+    }
+  }
+
+  function showAlert(msg, type) {
+    const div = document.createElement('div');
+    div.className = `alert alert-${type}`;
+    div.innerText = msg;
+    const content = document.getElementById('mainContent');
+    content.prepend(div);
+    setTimeout(() => div.remove(), 3000);
+  }
+
+  // Drawer logic
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('menuBtn').onclick = () => { drawer.classList.add('open'); overlay.classList.add('show'); };
+  document.
