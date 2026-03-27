@@ -280,11 +280,11 @@
 
 <script>
   // ========================
-  // YOUR WEB APP URL (REPLACED)
+  // YOUR NEW WEB APP URL
   // ========================
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSK05UzUNZPymKA6AGaz58iMmNLlZhF7bZ3KYgsgRGoTO4B71QZpXv_MuoddWiqsbV6Q/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfrq3wxjI_2V0he_tUTs2TrPWiWcz16bx2QSojij6ndWF-BGIFjAHZkHUKZt6mQ6ojig/exec";
 
-  let currentUser = null; // stores publicAddress, avatar, balances, etc.
+  let currentUser = null;
 
   // Helper: call backend
   async function callBackend(action, payload = {}) {
@@ -299,7 +299,6 @@
     return json.data;
   }
 
-  // Refresh user data and update UI
   async function refreshUserData() {
     if (!currentUser || !currentUser.publicAddress) return;
     try {
@@ -311,7 +310,6 @@
     }
   }
 
-  // Dashboard UI
   function renderDashboard() {
     if (!currentUser) {
       document.getElementById('mainContent').innerHTML = `
@@ -390,7 +388,6 @@
       };
       showAlert(`Wallet created! Address: ${data.publicAddress}`, "success");
       renderDashboard();
-      // Store in localStorage
       localStorage.setItem('dgUser', JSON.stringify(currentUser));
     } catch (err) {
       showAlert(err.message, "error");
@@ -412,7 +409,6 @@
     }
   }
 
-  // Admin functions
   async function adminLogin() {
     const pwd = prompt("Enter admin password:");
     if (!pwd) return false;
@@ -438,11 +434,11 @@
       let html = `<div class="admin-panel"><h3>Admin Panel</h3>
         <h4>Users</h4><table style="width:100%;font-size:12px;">`;
       users.forEach(u => {
-        html += `<tr><td>${u.publicAddress.slice(0,8)}</td><td>${u.mainBalance}</td><td>${u.farmingBalance}</td><td>${u.isVerified}</td><td>${u.isFrozen}</td></tr>`;
+        html += `<tr><td>${u.publicAddress.slice(0,8)}</td><td>${u.mainBalance}</td><td>${u.farmingBalance}</td><td>${u.isVerified}</td><td>${u.isFrozen}</td> </tr>`;
       });
       html += `</table><h4>Recent Transactions</h4><table style="width:100%;font-size:12px;">`;
       transactions.slice(0, 10).forEach(t => {
-        html += `<tr><td>${t.from.slice(0,6)}</td><td>${t.to.slice(0,6)}</td><td>${t.amount}</td><td>${t.type}</td></tr>`;
+        html += `<tr><td>${t.from.slice(0,6)}</td><td>${t.to.slice(0,6)}</td><td>${t.amount}</td><td>${t.type}</td> </tr>`;
       });
       html += `</table>
         <h4>Adjust Balance</h4>
@@ -491,12 +487,9 @@
     }
   }
 
-  // Page navigation
   async function showPage(page) {
     switch(page) {
-      case 'dashboard':
-        renderDashboard();
-        break;
+      case 'dashboard': renderDashboard(); break;
       case 'create':
         document.getElementById('mainContent').innerHTML = `<div class="card"><button id="createNow">Create Wallet</button></div>`;
         document.getElementById('createNow')?.addEventListener('click', createWallet);
@@ -576,4 +569,20 @@
   const drawer = document.getElementById('drawer');
   const overlay = document.getElementById('overlay');
   document.getElementById('menuBtn').onclick = () => { drawer.classList.add('open'); overlay.classList.add('show'); };
-  document.
+  document.getElementById('closeDrawer').onclick = () => { drawer.classList.remove('open'); overlay.classList.remove('show'); };
+  overlay.onclick = () => { drawer.classList.remove('open'); overlay.classList.remove('show'); };
+  document.querySelectorAll('.drawer a').forEach(link => {
+    link.onclick = (e) => {
+      e.preventDefault();
+      const page = link.getAttribute('data-page');
+      if (page) showPage(page);
+      drawer.classList.remove('open');
+      overlay.classList.remove('show');
+    };
+  });
+
+  // Start
+  loadStoredUser();
+</script>
+</body>
+</html>
