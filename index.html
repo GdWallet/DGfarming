@@ -18,18 +18,12 @@
       margin-top: 20px;
     }
 
-    .container {
-      max-width: 400px;
-      margin: auto;
-    }
-
     .card {
       background: white;
       color: black;
       margin: 15px;
       padding: 20px;
       border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
     input {
@@ -38,7 +32,6 @@
       margin: 5px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      font-size: 14px;
     }
 
     button {
@@ -47,22 +40,11 @@
       border: none;
       color: white;
       border-radius: 10px;
-      cursor: pointer;
       width: 95%;
-      font-size: 16px;
-      margin-top: 5px;
-    }
-
-    button:hover {
-      background: #e67e00;
     }
 
     #dashboard {
       display: none;
-    }
-
-    .logout {
-      background: red;
     }
   </style>
 </head>
@@ -71,83 +53,60 @@
 
 <h1>🚀 DG Wallet</h1>
 
-<div class="container">
+<div class="card">
+  <h3>Create Account</h3>
+  <input id="name" placeholder="Name">
+  <input id="email" placeholder="Email">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="signup()">Signup</button>
+</div>
 
-  <!-- SIGNUP -->
-  <div class="card">
-    <h3>Create Account</h3>
-    <input id="name" placeholder="Name">
-    <input id="email" placeholder="Email">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="signup()">Signup</button>
-  </div>
+<div class="card">
+  <h3>Login</h3>
+  <input id="lemail" placeholder="Email">
+  <input id="lpass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
 
-  <!-- LOGIN -->
-  <div class="card">
-    <h3>Login</h3>
-    <input id="lemail" placeholder="Email">
-    <input id="lpass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div class="card" id="dashboard">
-    <h3>💰 Balance</h3>
-    <h2><span id="balance">0</span> DGW</h2>
-
-    <button onclick="mine()">⛏️ Start Mining</button>
-
-    <button class="logout" onclick="logout()">Logout</button>
-  </div>
-
+<div class="card" id="dashboard">
+  <h3>Balance</h3>
+  <h2><span id="balance">0</span> DGW</h2>
+  <button onclick="mine()">Start Mining</button>
 </div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbx4UDcBBNZ1o-6WvOTWEoonSaF3YbgdQXBnmSuXlnxbZ1O1oiihEctj7ATF05RObRczXQ/exec";
 
-let user_id = localStorage.getItem("user_id") || "";
+let user_id = "";
 
-// ✅ AUTO LOGIN
-if (user_id) {
-  document.getElementById("dashboard").style.display = "block";
-}
-
-// ✅ SIGNUP (FIXED)
+// ✅ FIXED SIGNUP
 async function signup() {
   const nameVal = document.getElementById("name").value.trim();
   const emailVal = document.getElementById("email").value.trim();
   const passVal = document.getElementById("pass").value.trim();
+
+  console.log("DEBUG:", nameVal, emailVal, passVal); // 👈 debug
 
   if (!nameVal || !emailVal || !passVal) {
     alert("Please fill all fields");
     return;
   }
 
-  try {
-    const res = await fetch(API, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "signup",
-        name: nameVal,
-        email: emailVal,
-        password: passVal
-      })
-    });
+  const res = await fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "signup",
+      name: nameVal,
+      email: emailVal,
+      password: passVal
+    })
+  });
 
-    const data = await res.json();
-
-    if (data.status === "success") {
-      alert("Signup successful! Now login.");
-    } else {
-      alert(data.message || "Signup failed");
-    }
-
-  } catch (err) {
-    alert("Network error");
-  }
+  const data = await res.json();
+  alert(JSON.stringify(data));
 }
 
-// ✅ LOGIN (FIXED)
+// ✅ FIXED LOGIN
 async function login() {
   const emailVal = document.getElementById("lemail").value.trim();
   const passVal = document.getElementById("lpass").value.trim();
@@ -157,67 +116,38 @@ async function login() {
     return;
   }
 
-  try {
-    const res = await fetch(API, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "login",
-        email: emailVal,
-        password: passVal
-      })
-    });
+  const res = await fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      email: emailVal,
+      password: passVal
+    })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (data.status === "success") {
-      user_id = data.user_id;
-      localStorage.setItem("user_id", user_id);
-
-      document.getElementById("dashboard").style.display = "block";
-      document.getElementById("balance").innerText = parseFloat(data.balance).toFixed(4);
-    } else {
-      alert("Invalid email or password");
-    }
-
-  } catch (err) {
-    alert("Network error");
+  if (data.status === "success") {
+    user_id = data.user_id;
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("balance").innerText = data.balance;
+  } else {
+    alert("Login failed");
   }
 }
 
 // ✅ MINING
 async function mine() {
-  if (!user_id) {
-    alert("Please login first");
-    return;
-  }
+  const res = await fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "mine",
+      user_id: user_id
+    })
+  });
 
-  try {
-    const res = await fetch(API, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "mine",
-        user_id: user_id
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.status === "success") {
-      document.getElementById("balance").innerText =
-        parseFloat(data.balance).toFixed(4);
-    } else {
-      alert("Mining failed");
-    }
-
-  } catch (err) {
-    alert("Network error");
-  }
-}
-
-// ✅ LOGOUT
-function logout() {
-  localStorage.removeItem("user_id");
-  location.reload();
+  const data = await res.json();
+  document.getElementById("balance").innerText = data.balance;
 }
 </script>
 
