@@ -282,7 +282,7 @@
   // ========================
   // YOUR NEW WEB APP URL
   // ========================
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfrq3wxjI_2V0he_tUTs2TrPWiWcz16bx2QSojij6ndWF-BGIFjAHZkHUKZt6mQ6ojig/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzZsu_INcvyHWVpN2R87UJgrbW58ZDS4jBRBJz8_v2fGj5Gh5C-LaXKAV5RISioREY4SQ/exec";
 
   let currentUser = null;
 
@@ -434,11 +434,11 @@
       let html = `<div class="admin-panel"><h3>Admin Panel</h3>
         <h4>Users</h4><table style="width:100%;font-size:12px;">`;
       users.forEach(u => {
-        html += `<tr><td>${u.publicAddress.slice(0,8)}</td><td>${u.mainBalance}</td><td>${u.farmingBalance}</td><td>${u.isVerified}</td><td>${u.isFrozen}</td> </tr>`;
+        html += ` <tr><td>${u.publicAddress.slice(0,8)}</td><td>${u.mainBalance}</td><td>${u.farmingBalance}</td><td>${u.isVerified}</td><td>${u.isFrozen}</td></tr>`;
       });
       html += `</table><h4>Recent Transactions</h4><table style="width:100%;font-size:12px;">`;
       transactions.slice(0, 10).forEach(t => {
-        html += `<tr><td>${t.from.slice(0,6)}</td><td>${t.to.slice(0,6)}</td><td>${t.amount}</td><td>${t.type}</td> </tr>`;
+        html += ` <tr><td>${t.from.slice(0,6)}</td><td>${t.to.slice(0,6)}</td><td>${t.amount}</td><td>${t.type}</td></tr>`;
       });
       html += `</table>
         <h4>Adjust Balance</h4>
@@ -570,19 +570,4 @@
   const overlay = document.getElementById('overlay');
   document.getElementById('menuBtn').onclick = () => { drawer.classList.add('open'); overlay.classList.add('show'); };
   document.getElementById('closeDrawer').onclick = () => { drawer.classList.remove('open'); overlay.classList.remove('show'); };
-  overlay.onclick = () => { drawer.classList.remove('open'); overlay.classList.remove('show'); };
-  document.querySelectorAll('.drawer a').forEach(link => {
-    link.onclick = (e) => {
-      e.preventDefault();
-      const page = link.getAttribute('data-page');
-      if (page) showPage(page);
-      drawer.classList.remove('open');
-      overlay.classList.remove('show');
-    };
-  });
-
-  // Start
-  loadStoredUser();
-</script>
-</body>
-</html>
+  overlay.onclick = () => { drawer.classList.remove('open'); overlay.classList.
