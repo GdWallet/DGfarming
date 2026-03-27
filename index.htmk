@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>DG Wallet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #fff; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+    /* Auth forms */
+    .auth-form { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 24px; padding: 24px; margin-top: 40px; }
+    .auth-form h2 { text-align: center; margin-bottom: 24px; color: #ff9800; }
+    .input-group { margin-bottom: 16px; }
+    .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 16px; border: none; border-radius: 12px; background: rgba(255,255,255,0.2); color: #fff; font-size: 16px; }
+    .input-group input::placeholder, .input-group textarea::placeholder { color: rgba(255,255,255,0.7); }
+    button { width: 100%; padding: 12px; background: #ff9800; border: none; border-radius: 12px; color: #1a1a2e; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.3s; }
+    button:hover { background: #ffb74d; }
+    .toggle-link { text-align: center; margin-top: 16px; font-size: 14px; }
+    .toggle-link span { color: #ff9800; cursor: pointer; }
+
+    /* Dashboard */
+    .dashboard { display: none; }
+    .balance-card { background: rgba(255,255,255,0.1); border-radius: 24px; padding: 24px; text-align: center; margin-bottom: 24px; }
+    .balance-card h3 { font-size: 14px; opacity: 0.8; margin-bottom: 8px; }
+    .balance-card .balance { font-size: 48px; font-weight: bold; color: #ff9800; }
+    .mining-btn { background: #ff9800; padding: 16px; border-radius: 60px; font-size: 20px; font-weight: bold; margin: 24px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .stats { display: flex; justify-content: space-between; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 16px; margin-bottom: 24px; }
+    .stat { text-align: center; }
+    .stat .label { font-size: 12px; opacity: 0.8; }
+    .stat .value { font-size: 18px; font-weight: bold; }
+    .tabs { display: flex; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+    .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: rgba(255,255,255,0.6); }
+    .tab.active { color: #ff9800; border-bottom: 2px solid #ff9800; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .transaction-item, .task-item, .referral-item { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .withdraw-form { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; }
+    .referral-code { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; font-family: monospace; font-size: 18px; text-align: center; margin: 10px 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Auth Forms -->
+  <div id="authContainer">
+    <div id="loginForm" class="auth-form">
+      <h2>DG Wallet</h2>
+      <div class="input-group"><input type="email" id="loginEmail" placeholder="Email"></div>
+      <div class="input-group"><input type="password" id="loginPassword" placeholder="Password"></div>
+      <button id="loginBtn">Login</button>
+      <div class="toggle-link">Don't have an account? <span id="showSignup">Sign up</span></div>
+    </div>
+    <div id="signupForm" class="auth-form" style="display:none">
+      <h2>Create Account</h2>
+      <div class="input-group"><input type="text" id="signupName" placeholder="Full Name"></div>
+      <div class="input-group"><input type="email" id="signupEmail" placeholder="Email"></div>
+      <div class="input-group"><input type="password" id="signupPassword" placeholder="Password"></div>
+      <div class="input-group"><input type="text" id="signupReferral" placeholder="Referral Code (optional)"></div>
+      <button id="signupBtn">Sign Up</button>
+      <div class="toggle-link">Already have an account? <span id="showLogin">Login</span></div>
+    </div>
+  </div>
+
+  <!-- Dashboard (hidden until login) -->
+  <div id="dashboard" class="dashboard">
+    <div class="balance-card">
+      <h3>Your Balance</h3>
+      <div class="balance" id="balanceAmount">0.00</div>
+      <div style="font-size: 12px; margin-top: 8px;">DGW Tokens</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="label">Mining Rate</div><div class="value" id="miningRate">0.10</div><div class="label">DGW/click</div></div>
+      <div class="stat"><div class="label">Referrals</div><div class="value" id="referralCount">0</div></div>
+    </div>
+
+    <button id="mineBtn" class="mining-btn">⛏️ MINE NOW</button>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="transactions">History</div>
+      <div class="tab" data-tab="referral">Referral</div>
+      <div class="tab" data-tab="withdraw">Withdraw</div>
+    </div>
+
+    <div id="transactionsContent" class="tab-content active">
+      <div id="transactionsList">No transactions yet.</div>
+    </div>
+    <div id="referralContent" class="tab-content">
+      <div style="margin-bottom: 16px;">
+        <strong>Your Referral Code:</strong>
+        <div id="referralCodeDisplay" class="referral-code">Loading...</div>
+        <button id="copyReferralBtn">Copy Code</button>
+      </div>
+      <div><strong>Referred Users:</strong></div>
+      <div id="referralsList"></div>
+    </div>
+    <div id="withdrawContent" class="tab-content">
+      <div class="withdraw-form">
+        <div class="input-group"><input type="number" id="withdrawAmount" placeholder="Amount (DGW)"></div>
+        <div class="input-group"><input type="text" id="withdrawWallet" placeholder="Wallet Address"></div>
+        <button id="withdrawBtn">Request Withdrawal</button>
+      </div>
+      <div id="withdrawMessage"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ========== CONFIGURATION ==========
+  const API_URL = "https://script.google.com/macros/s/AKfycbxmjRu1PrpbBRX_PLodO2phEcY4LkFdm82T77yKSURzqokxCSy8c2rWwD35IGXmefY/exec";
+  let userId = null;
+
+  async function apiCall(path, data = {}) {
+    const url = `${API_URL}?path=${path}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    return await response.json();
+  }
+
+  // Auth
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const res = await apiCall("login", { email, password });
+    if (res.success) {
+      userId = res.userId;
+      showDashboard();
+      loadDashboard();
+    } else {
+      alert("Login failed: " + res.error);
+    }
+  });
+
+  document.getElementById("signupBtn").addEventListener("click", async () => {
+    const name = document.getElementById("signupName").value;
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+    const referral = document.getElementById("signupReferral").value;
+    const res = await apiCall("signup", { name, email, password, referral });
+    if (res.success) {
+      alert("Signup successful! Please login.");
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("signupForm").style.display = "none";
+    } else {
+      alert("Signup failed: " + res.error);
+    }
+  });
+
+  document.getElementById("showSignup").addEventListener("click", () => {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("signupForm").style.display = "block";
+  });
+  document.getElementById("showLogin").addEventListener("click", () => {
+    document.getElementById("loginForm").style.display = "block";
+    document.getElementById("signupForm").style.display = "none";
+  });
+
+  async function showDashboard() {
+    document.getElementById("authContainer").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+  }
+
+  async function loadDashboard() {
+    const res = await apiCall("dashboard", { userId });
+    if (res.balance !== undefined) {
+      document.getElementById("balanceAmount").innerText = res.balance.toFixed(4);
+    }
+    // Load transactions (optional – you can add a getTransactions endpoint later)
+    loadReferralInfo();
+  }
+
+  async function loadReferralInfo() {
+    // Try to get referral code from backend (if endpoint exists)
+    try {
+      const res = await apiCall("getReferralInfo", { userId });
+      if (res.referral_code) {
+        document.getElementById("referralCodeDisplay").innerText = res.referral_code;
+        document.getElementById("referralCount").innerText = res.referrals ? res.referrals.length : 0;
+        const listDiv = document.getElementById("referralsList");
+        if (res.referrals && res.referrals.length > 0) {
+          listDiv.innerHTML = res.referrals.map(ref => `<div class="referral-item">${ref.name || ref.email}</div>`).join("");
+        } else {
+          listDiv.innerHTML = "<div>No referrals yet.</div>";
+        }
+      } else {
+        // Fallback: generate a dummy code based on userId
+        document.getElementById("referralCodeDisplay").innerText = userId ? userId.slice(0,6).toUpperCase() : "N/A";
+        document.getElementById("referralsList").innerHTML = "<div>Referral tracking requires backend update.</div>";
+      }
+    } catch (e) {
+      document.getElementById("referralCodeDisplay").innerText = "Not available (add endpoint)";
+      document.getElementById("referralsList").innerHTML = "<div>To enable referral tracking, add the getReferralInfo endpoint to your script.</div>";
+    }
+  }
+
+  document.getElementById("mineBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("mineBtn");
+    btn.disabled = true;
+    btn.innerText = "Mining...";
+    const res = await apiCall("mine", { userId });
+    if (res.earned !== undefined) {
+      alert(`You mined ${res.earned.toFixed(4)} DGW!`);
+      loadDashboard();
+    } else {
+      alert("Mining failed: " + res.error);
+    }
+    btn.disabled = false;
+    btn.innerText = "⛏️ MINE NOW";
+  });
+
+  document.getElementById("withdrawBtn").addEventListener("click", async () => {
+    const amount = parseFloat(document.getElementById("withdrawAmount").value);
+    const wallet = document.getElementById("withdrawWallet").value;
+    if (!amount || !wallet) {
+      alert("Please enter amount and wallet address");
+      return;
+    }
+    const res = await apiCall("withdraw", { userId, amount, wallet });
+    if (res.success) {
+      alert("Withdrawal request submitted.");
+      loadDashboard();
+    } else {
+      alert("Error: " + res.error);
+    }
+  });
+
+  document.getElementById("copyReferralBtn").addEventListener("click", () => {
+    const code = document.getElementById("referralCodeDisplay").innerText;
+    if (code && code !== "Loading..." && code !== "Not available (add endpoint)") {
+      navigator.clipboard.writeText(code);
+      alert("Referral code copied!");
+    } else {
+      alert("No referral code available yet.");
+    }
+  });
+
+  // Tab switching
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      const tabId = tab.getAttribute("data-tab");
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+      document.getElementById(tabId + "Content").classList.add("active");
+      if (tabId === "referral") loadReferralInfo();
+    });
+  });
+</script>
+</body>
+  </html>
