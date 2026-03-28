@@ -15,11 +15,11 @@
       background: linear-gradient(135deg, #f7931a, #ffb347);
       color: #fff;
       min-height: 100vh;
+      padding: 1rem;
     }
     .container {
       max-width: 600px;
       margin: 0 auto;
-      padding: 1rem;
     }
     .card {
       background: rgba(255,255,255,0.15);
@@ -195,29 +195,33 @@
   // ========================
   // YOUR NEW WEB APP URL
   // ========================
-  const API = "https://script.google.com/macros/s/AKfycbyyKK0e-AVfQIhWUCa_ojjos269uAMKqJpQk3FwcxYLDVc_w-wNPL2T8uaEoG8MkLS-VA/exec";
+  const API = "https://script.google.com/macros/s/AKfycbx5oiH4CdkjIBnpqRQkkqHRXO4MaNl2HL9p9AlHR7oxKTdU3TQIx1Oh6KJnC2W8U_TUag/exec";
 
   let currentUser = null;
   let miningInterval = null;
 
-  // Helper fetch
   async function callApi(action, payload = {}) {
-    const res = await fetch(API, {
-      method: "POST",
-      body: JSON.stringify({ action, ...payload }),
-      headers: { "Content-Type": "application/json" }
-    });
-    return await res.json();
+    try {
+      const res = await fetch(API, {
+        method: "POST",
+        body: JSON.stringify({ action, ...payload }),
+        headers: { "Content-Type": "application/json" }
+      });
+      return await res.json();
+    } catch (err) {
+      console.error("Network error:", err);
+      alert("Network error – check your internet and ensure the Apps Script URL is correct.");
+      return { success: false, error: err.message };
+    }
   }
 
-  // Auto login from localStorage
   (function() {
     const stored = localStorage.getItem("user");
     if (stored) {
       try {
         currentUser = JSON.parse(stored);
         showDashboard();
-      } catch(e) {}
+      } catch(e) { console.error(e); }
     }
   })();
 
@@ -228,11 +232,8 @@
     const referrerId = document.getElementById("referrerId").value.trim();
     if (!name || !email || !pass) return alert("Fill all fields");
     const res = await callApi("signup", { name, email, password: pass, referrerId });
-    if (res.success) {
-      alert("Signup successful! Now login.");
-    } else {
-      alert(res.data?.message || "Signup failed");
-    }
+    if (res.success) alert("Signup successful! Now login.");
+    else alert(res.data?.message || res.error || "Signup failed");
   }
 
   async function login() {
@@ -246,7 +247,7 @@
       localStorage.setItem("user", JSON.stringify(currentUser));
       showDashboard();
     } else {
-      alert(res.data?.message || "Login failed");
+      alert(res.data?.message || res.error || "Login failed");
     }
   }
 
@@ -281,7 +282,6 @@
         startBtn.style.display = "none";
         statusDiv.innerHTML = `⛏️ Mining active: ${formatTime(status.remainingSeconds)} remaining<br>Earned so far: ${status.earnedPoints.toFixed(4)} DGW`;
         statusDiv.classList.add("mining-active");
-        // Update live balance with earned points
         const currentBalance = parseFloat(currentUser.balance) + status.earnedPoints;
         document.getElementById("balance").innerText = currentBalance.toFixed(4);
       } else {
@@ -302,7 +302,7 @@
       alert("Mining started! It will run for 24 hours.");
       refreshUserData();
     } else {
-      alert(res.data?.message || "Failed to start mining");
+      alert(res.data?.message || res.error || "Failed to start mining");
     }
   }
 
@@ -312,7 +312,7 @@
       alert(res.data.message);
       refreshUserData();
     } else {
-      alert(res.data?.message);
+      alert(res.data?.message || res.error);
     }
   }
 
@@ -325,7 +325,7 @@
       document.getElementById("referralEarnings").innerText = parseFloat(currentUser.referralEarnings).toFixed(4);
       document.getElementById("verifiedBadge").style.display = currentUser.verified ? "inline-block" : "none";
     } else {
-      console.error("Failed to refresh user");
+      console.error("Refresh failed", res);
     }
   }
 
@@ -338,7 +338,7 @@
       alert(res.data.message);
       refreshUserData();
     } else {
-      alert(res.data?.message);
+      alert(res.data?.message || res.error);
     }
   }
 
@@ -350,13 +350,12 @@
       (res.data || []).forEach(ann => {
         const div = document.createElement("div");
         div.className = "announcement";
-        div.innerHTML = `<strong>📢 ${new Date(ann.timestamp).toLocaleString()}</strong><br>${ann.text}`;
+        div.innerHTML = `<strong>📢 ${new Date(ann.timestamp).toLocaleString()}</strong><br>${escapeHtml(ann.text)}`;
         container.appendChild(div);
       });
     }
   }
 
-  // Admin functions
   async function loadAdminUsers() {
     const res = await callApi("getAllUsers");
     if (res.success) {
@@ -468,7 +467,6 @@
     });
   }
 
-  // Logout
   window.logout = function() {
     localStorage.removeItem("user");
     location.reload();
